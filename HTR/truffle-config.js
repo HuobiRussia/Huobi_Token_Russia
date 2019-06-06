@@ -17,9 +17,9 @@ module.exports = {
       host: "127.0.0.1",
       port: 8545,
 //      gas:      1000000,
-      gasLimit: 3366921,
-      gas: 3366921,
-//      gasPrice: 220000000, // Specified in Wei
+      gasLimit: 6721975,
+      gas: 6721975,
+      gasPrice: 20000000000, // Specified in Wei
       network_id: "*"
     },
     test: {

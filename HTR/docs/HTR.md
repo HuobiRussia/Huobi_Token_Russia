@@ -7,11 +7,14 @@
   * [decimals](#function-decimals)
   * [increaseAllowance](#function-increaseallowance)
   * [unpause](#function-unpause)
+  * [mint](#function-mint)
+  * [burn](#function-burn)
   * [isPauser](#function-ispauser)
   * [paused](#function-paused)
   * [renouncePauser](#function-renouncepauser)
   * [balanceOf](#function-balanceof)
   * [renounceOwnership](#function-renounceownership)
+  * [burnFrom](#function-burnfrom)
   * [setTrustedAddress](#function-settrustedaddress)
   * [addPauser](#function-addpauser)
   * [pause](#function-pause)
@@ -19,12 +22,17 @@
   * [owner](#function-owner)
   * [isOwner](#function-isowner)
   * [symbol](#function-symbol)
+  * [addMinter](#function-addminter)
+  * [renounceMinter](#function-renounceminter)
   * [reclaimEther](#function-reclaimether)
   * [decreaseAllowance](#function-decreaseallowance)
   * [transfer](#function-transfer)
+  * [isMinter](#function-isminter)
   * [allowance](#function-allowance)
   * [transferOwnership](#function-transferownership)
   * [OwnershipTransferred](#event-ownershiptransferred)
+  * [MinterAdded](#event-minteradded)
+  * [MinterRemoved](#event-minterremoved)
   * [Paused](#event-paused)
   * [Unpaused](#event-unpaused)
   * [PauserAdded](#event-pauseradded)
@@ -61,7 +69,7 @@ Inputs
 
 HTR.bulkTransfer(recipients, amounts) `nonpayable` `153a1f3e`
 
-> Bulk transfer function     * Makes multiple transfers to receipients.
+> Bulk transfer function     * Makes multiple transfers to receipients. tokenFallback function isn't called for trusted smart contracts.
 
 Inputs
 
@@ -126,6 +134,33 @@ HTR.unpause() `nonpayable` `3f4ba83a`
 
 
 
+## *function* mint
+
+HTR.mint(account, amount) `nonpayable` `40c10f19`
+
+> See `ERC20._mint`.     * Requirements:     * - the caller must have the `MinterRole`.
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | undefined |
+| *uint256* | amount | undefined |
+
+
+## *function* burn
+
+HTR.burn(amount) `nonpayable` `42966c68`
+
+> Destroys `amount` tokens from the caller.     * See `ERC20._burn`.
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *uint256* | amount | undefined |
+
+
 ## *function* isPauser
 
 HTR.isPauser(account) `view` `46fbf68e`
@@ -177,10 +212,25 @@ HTR.renounceOwnership() `nonpayable` `715018a6`
 
 
 
+## *function* burnFrom
+
+HTR.burnFrom(account, amount) `nonpayable` `79cc6790`
+
+> See `ERC20._burnFrom`.
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | undefined |
+| *uint256* | amount | undefined |
+
+
 ## *function* setTrustedAddress
 
 HTR.setTrustedAddress(trusted, is_trusted) `nonpayable` `806c3ca9`
 
+> set trusted certificate address, containing tokenFallback function implementatios     * Requirements:     * - `recipient` cannot be the zero address. - the caller must have a balance of at least `amount`.
 
 Inputs
 
@@ -251,6 +301,26 @@ HTR.symbol() `view` `95d89b41`
 
 
 
+## *function* addMinter
+
+HTR.addMinter(account) `nonpayable` `983b2d56`
+
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | undefined |
+
+
+## *function* renounceMinter
+
+HTR.renounceMinter() `nonpayable` `98650275`
+
+
+
+
+
 ## *function* reclaimEther
 
 HTR.reclaimEther(_to) `nonpayable` `9a6a30a4`
@@ -290,6 +360,18 @@ Inputs
 | *uint256* | amount | undefined |
 
 
+## *function* isMinter
+
+HTR.isMinter(account) `view` `aa271e1a`
+
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | undefined |
+
+
 ## *function* allowance
 
 HTR.allowance(owner, spender) `view` `dd62ed3e`
@@ -327,6 +409,26 @@ Arguments
 |-|-|-|
 | *address* | previousOwner | indexed |
 | *address* | newOwner | indexed |
+
+## *event* MinterAdded
+
+HTR.MinterAdded(account) `6ae17283`
+
+Arguments
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | indexed |
+
+## *event* MinterRemoved
+
+HTR.MinterRemoved(account) `e94479a9`
+
+Arguments
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | indexed |
 
 ## *event* Paused
 

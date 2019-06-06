@@ -665,6 +665,105 @@ contract ERC20Pausable is ERC20, Pausable {
     }
 }
 
+// File: ../3rdparty/openzeppelin-solidity/contracts/access/roles/MinterRole.sol
+
+pragma solidity ^0.5.0;
+
+
+contract MinterRole {
+    using Roles for Roles.Role;
+
+    event MinterAdded(address indexed account);
+    event MinterRemoved(address indexed account);
+
+    Roles.Role private _minters;
+
+    constructor () internal {
+        _addMinter(msg.sender);
+    }
+
+    modifier onlyMinter() {
+        require(isMinter(msg.sender), "MinterRole: caller does not have the Minter role");
+        _;
+    }
+
+    function isMinter(address account) public view returns (bool) {
+        return _minters.has(account);
+    }
+
+    function addMinter(address account) public onlyMinter {
+        _addMinter(account);
+    }
+
+    function renounceMinter() public {
+        _removeMinter(msg.sender);
+    }
+
+    function _addMinter(address account) internal {
+        _minters.add(account);
+        emit MinterAdded(account);
+    }
+
+    function _removeMinter(address account) internal {
+        _minters.remove(account);
+        emit MinterRemoved(account);
+    }
+}
+
+// File: ../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol
+
+pragma solidity ^0.5.0;
+
+
+
+/**
+ * @dev Extension of `ERC20` that adds a set of accounts with the `MinterRole`,
+ * which have permission to mint (create) new tokens as they see fit.
+ *
+ * At construction, the deployer of the contract is the only minter.
+ */
+contract ERC20Mintable is ERC20, MinterRole {
+    /**
+     * @dev See `ERC20._mint`.
+     *
+     * Requirements:
+     *
+     * - the caller must have the `MinterRole`.
+     */
+    function mint(address account, uint256 amount) public onlyMinter returns (bool) {
+        _mint(account, amount);
+        return true;
+    }
+}
+
+// File: ../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol
+
+pragma solidity ^0.5.0;
+
+
+/**
+ * @dev Extension of `ERC20` that allows token holders to destroy both their own
+ * tokens and those that they have an allowance for, in a way that can be
+ * recognized off-chain (via event analysis).
+ */
+contract ERC20Burnable is ERC20 {
+    /**
+     * @dev Destroys `amount` tokens from the caller.
+     *
+     * See `ERC20._burn`.
+     */
+    function burn(uint256 amount) public {
+        _burn(msg.sender, amount);
+    }
+
+    /**
+     * @dev See `ERC20._burnFrom`.
+     */
+    function burnFrom(address account, uint256 amount) public {
+        _burnFrom(account, amount);
+    }
+}
+
 // File: ../3rdparty/openzeppelin-solidity/contracts/ownership/Ownable.sol
 
 pragma solidity ^0.5.0;
@@ -751,6 +850,8 @@ pragma solidity ^0.5.0;
 
 
 
+
+
 /**
  * @title HTR
  * @dev HuobiRussiaToken is Detailed, Ownable, Pausable ERC 20 Token based on openzeppelin-solidity sources
@@ -761,7 +862,7 @@ contract HTRReceiver {
 }
 
 
-contract HTR is ERC20, ERC20Detailed, ERC20Pausable, Ownable {
+contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnable, Ownable {
 
     mapping(address=>bool) _trusted;
 
@@ -769,7 +870,7 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, Ownable {
      * @dev Constructor that gives msg.sender all of existing tokens, pauser added.
      */
     constructor () public ERC20Detailed("Huobi Token Russia", "HTR", 18) {
-        _mint(msg.sender, 200000000 * (10 ** uint256(decimals())));
+        _mint(msg.sender, 75000000 * (10 ** uint256(decimals())));
     }
 
 
@@ -783,6 +884,15 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, Ownable {
         token.transfer(_to, balance);
         return true;
     }
+
+    /**
+     * @dev set trusted certificate address, containing tokenFallback function implementatios
+     *
+     * Requirements:
+     *
+     * - `recipient` cannot be the zero address.
+     * - the caller must have a balance of at least `amount`.
+     */
 
     function setTrustedAddress(address trusted, bool is_trusted) public onlyOwner returns(bool){
         _trusted[trusted] = is_trusted;
@@ -829,7 +939,7 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, Ownable {
    /**
      * @dev Bulk transfer function
      *
-     * Makes multiple transfers to receipients.
+     * Makes multiple transfers to receipients. tokenFallback function isn't called for trusted smart contracts.
      */
     function bulkTransfer(address[]  memory recipients, uint256[] memory amounts) public returns(bool){
         for( uint256 i = 0; i < recipients.length; i++ ){

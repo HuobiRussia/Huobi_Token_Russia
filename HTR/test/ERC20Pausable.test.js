@@ -5,7 +5,7 @@ const ERC20PausableMock = artifacts.require('HTR');
 const { shouldBehaveLikePublicRole } = require('./behaviors/access/roles/PublicRole.behavior');
 
 contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAccount, ...otherAccounts]) {
-  const initialSupply = new BN("10").pow( new BN("18")).mul( new BN("200000000"));
+  const initialSupply = new BN("10").pow( new BN("18")).mul( new BN("75000000"));
 
   beforeEach(async function () {
     this.token = await ERC20PausableMock.new();

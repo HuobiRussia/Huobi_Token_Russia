@@ -3,6 +3,8 @@ pragma solidity ^0.5.0;
 import "../../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "../../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 import "../../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "../../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
+import "../../3rdparty/openzeppelin-solidity/contracts/token/ERC20/ERC20Burnable.sol";
 import "../../3rdparty/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
@@ -15,15 +17,21 @@ contract HTRReceiver {
 }
 
 
-contract HTR is ERC20, ERC20Detailed, ERC20Pausable, Ownable {
+contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnable, Ownable {
 
     mapping(address=>bool) _trusted;
-
+    uint256 _mintLimit = 200000000 * 10**18;
+    
+    function mintLimit() public view returns(uint256){
+        return _mintLimit;
+    }
+    
     /**
      * @dev Constructor that gives msg.sender all of existing tokens, pauser added.
      */
     constructor () public ERC20Detailed("Huobi Token Russia", "HTR", 18) {
-        _mint(msg.sender, 200000000 * (10 ** uint256(decimals())));
+        _mint(msg.sender, 75000000 * (10 ** uint256(decimals())));
+
     }
 
 
@@ -100,4 +108,18 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, Ownable {
         }
         return true;
     }
+
+    /**
+     * @dev See `ERC20._mint`.
+     *
+     * Requirements:
+     *
+     * - the caller must have the `MinterRole`. totalSupply + amount must be lower than mintLimit. 
+     */
+    function mint(address account, uint256 amount) public onlyMinter returns (bool) {
+        require(totalSupply().add(amount) <= mintLimit(), "Mint limit exceeded");
+        _mint(account, amount);
+        return true;
+    }
+
 }
