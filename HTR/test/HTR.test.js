@@ -1,11 +1,13 @@
 const { shouldBehaveLikeERC20Mintable } = require('./behaviors/ERC20Mintable.behavior');
 const ERC20MintableMock = artifacts.require('HTR');
+const HTRReceiverMock = artifacts.require('HTRReceiver');
 const { shouldBehaveLikePublicRole } = require('./behaviors/access/roles/PublicRole.behavior');
 const { BN, constants, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 
 contract('HTR', function ([ minter, otherMinter, ...otherAccounts]) {
   beforeEach(async function () {
     this.token = await ERC20MintableMock.new({ from: minter });
+    this.token_receiver = await HTRReceiverMock.new({ from: minter });
   });
 
   describe('HTR mint limit', function () {
@@ -52,6 +54,22 @@ contract('HTR', function ([ minter, otherMinter, ...otherAccounts]) {
       for(let i = 0; i<otherAccounts.length; i++ ){
         (await this.contract.balanceOf(otherAccounts[i])).should.be.bignumber.equal(amounts[i]);
       }
+    });
+
+
+  });
+
+  describe('HTR trusted contract', async function () {
+    beforeEach(async function () {
+      this.contract = this.token;
+      this.contract_receiver = this.token_receiver;
+    });
+
+    it("trusted", async function(){
+      const amount = new BN(10).pow(new BN(18)).mul( new BN(100));
+      await this.contract.setTrustedAddress(this.contract_receiver.address, true);
+      await this.contract.transfer(this.contract_receiver.address, amount);
+      (await this.contract_receiver.balanceOf(minter)).should.be.bignumber.equal(amount)
     });
 
 
