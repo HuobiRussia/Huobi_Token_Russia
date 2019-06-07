@@ -44,25 +44,6 @@ function shouldBehaveLikePublicRole (authorized, otherAuthorized, [other], rolen
       );
     });
 
-    describe('access control', function () {
-      context('from authorized account', function () {
-        const from = authorized;
-
-        it('allows access', async function () {
-          await this.contract[`only${rolename}`]({ from });
-        });
-      });
-
-      context('from unauthorized account', function () {
-        const from = other;
-
-        it('reverts', async function () {
-          await expectRevert(this.contract[`only${rolename}`]({ from }),
-            `${rolename}Role: caller does not have the ${rolename} role`
-          );
-        });
-      });
-    });
 
     describe('add', function () {
       const from = manager === undefined ? authorized : manager;
@@ -94,7 +75,7 @@ function shouldBehaveLikePublicRole (authorized, otherAuthorized, [other], rolen
 
     describe('remove', function () {
       // Non-managed roles have no restrictions on the mocked '_remove' function (exposed via 'remove').
-      const from = manager || other;
+      const from = manager === undefined ? authorized : manager;
 
       context(`from ${manager ? 'the manager' : 'any'} account`, function () {
         it('removes role from an already assigned account', async function () {

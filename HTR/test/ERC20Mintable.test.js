@@ -2,7 +2,7 @@ const { shouldBehaveLikeERC20Mintable } = require('./behaviors/ERC20Mintable.beh
 const ERC20MintableMock = artifacts.require('HTR');
 const { shouldBehaveLikePublicRole } = require('./behaviors/access/roles/PublicRole.behavior');
 
-contract('HTR', function ([_, minter, otherMinter, ...otherAccounts]) {
+contract('HTR', function ([ minter, otherMinter, ...otherAccounts]) {
   beforeEach(async function () {
     this.token = await ERC20MintableMock.new({ from: minter });
   });

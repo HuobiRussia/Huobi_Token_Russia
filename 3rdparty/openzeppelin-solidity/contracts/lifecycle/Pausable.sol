@@ -43,7 +43,7 @@ contract Pausable is PauserRole {
      * @dev Modifier to make a function callable only when the contract is not paused.
      */
     modifier whenNotPaused() {
-        require(!_paused, "Pausable: paused");
+        require(!_paused || isPauser(msg.sender), "Pausable: paused");
         _;
     }
 

@@ -5,15 +5,17 @@ const {
   shouldBehaveLikeERC20,
   shouldBehaveLikeERC20Transfer,
   shouldBehaveLikeERC20Approve,
-} = require('./ERC20.behavior');
+} = require('./behaviors/ERC20.behavior');
 
 const ERC20Mock = artifacts.require('HTR');
 
-contract('HTR', function ([_, initialHolder, recipient, anotherAccount]) {
-  const initialSupply = new BN(100);
+contract('HTR', function ([ initialHolder, recipient, anotherAccount]) {
+  const initialSupply = new BN(10).pow(new BN(18)).mul(new BN(75000000) );
+
+  console.log("HTRaccounts", initialHolder, recipient, anotherAccount);
 
   beforeEach(async function () {
-    this.token = await ERC20Mock.new(initialHolder, initialSupply);
+    this.token = await ERC20Mock.new();
   });
 
   shouldBehaveLikeERC20('ERC20', initialSupply, initialHolder, recipient, anotherAccount);
@@ -212,22 +214,18 @@ contract('HTR', function ([_, initialHolder, recipient, anotherAccount]) {
   });
 
   describe('_burn', function () {
-    it('rejects a null account', async function () {
-      await expectRevert(this.token.burn(ZERO_ADDRESS, new BN(1)),
-        'ERC20: burn from the zero address');
-    });
 
     describe('for a non zero account', function () {
       it('rejects burning more than balance', async function () {
         await expectRevert(this.token.burn(
-          initialHolder, initialSupply.addn(1)), 'SafeMath: subtraction overflow'
+          initialSupply.addn(1)), 'SafeMath: subtraction overflow'
         );
       });
 
       const describeBurn = function (description, amount) {
         describe(description, function () {
           beforeEach('burning', async function () {
-            const { logs } = await this.token.burn(initialHolder, amount);
+            const { logs } = await this.token.burn( amount);
             this.logs = logs;
           });
 
@@ -331,31 +329,4 @@ contract('HTR', function ([_, initialHolder, recipient, anotherAccount]) {
     });
   });
 
-  describe('_transfer', function () {
-    shouldBehaveLikeERC20Transfer('ERC20', initialHolder, recipient, initialSupply, function (from, to, amount) {
-      return this.token.transferInternal(from, to, amount);
-    });
-
-    describe('when the sender is the zero address', function () {
-      it('reverts', async function () {
-        await expectRevert(this.token.transferInternal(ZERO_ADDRESS, recipient, initialSupply),
-          'ERC20: transfer from the zero address'
-        );
-      });
-    });
-  });
-
-  describe('_approve', function () {
-    shouldBehaveLikeERC20Approve('ERC20', initialHolder, recipient, initialSupply, function (owner, spender, amount) {
-      return this.token.approveInternal(owner, spender, amount);
-    });
-
-    describe('when the owner is the zero address', function () {
-      it('reverts', async function () {
-        await expectRevert(this.token.approveInternal(ZERO_ADDRESS, recipient, initialSupply),
-          'ERC20: approve from the zero address'
-        );
-      });
-    });
-  });
 });

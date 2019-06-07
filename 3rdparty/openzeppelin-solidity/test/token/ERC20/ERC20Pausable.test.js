@@ -22,6 +22,7 @@ contract('ERC20Pausable', function ([_, pauser, otherPauser, recipient, anotherA
   describe('pause', function () {
     describe('when the sender is the token pauser', function () {
       const from = pauser;
+      const other = otherAccount;
 
       describe('when the token is unpaused', function () {
         it('pauses the token', async function () {
@@ -42,7 +43,7 @@ contract('ERC20Pausable', function ([_, pauser, otherPauser, recipient, anotherA
         });
 
         it('reverts', async function () {
-          await expectRevert(this.token.pause({ from }), 'Pausable: paused');
+          await expectRevert(this.token.pause({ other }), 'Pausable: paused');
         });
       });
     });
@@ -61,6 +62,7 @@ contract('ERC20Pausable', function ([_, pauser, otherPauser, recipient, anotherA
   describe('unpause', function () {
     describe('when the sender is the token pauser', function () {
       const from = pauser;
+      const other = otherAccount;
 
       describe('when the token is paused', function () {
         beforeEach(async function () {
@@ -81,7 +83,7 @@ contract('ERC20Pausable', function ([_, pauser, otherPauser, recipient, anotherA
 
       describe('when the token is unpaused', function () {
         it('reverts', async function () {
-          await expectRevert(this.token.unpause({ from }), 'Pausable: not paused');
+          await expectRevert(this.token.unpause({ other }), 'Pausable: not paused');
         });
       });
     });
@@ -137,8 +139,10 @@ contract('ERC20Pausable', function ([_, pauser, otherPauser, recipient, anotherA
 
       it('reverts when trying to transfer when paused', async function () {
         await this.token.pause({ from: pauser });
-
-        await expectRevert(this.token.transfer(recipient, initialSupply, { from: pauser }),
+        await this.token.transfer(recipient, initialSupply, { from: pauser });
+        const isPauser = await this.token.isPauser(recipient);
+        console.log("PauserTest", pauser, recipient, isPauser);
+        await expectRevert(this.token.transfer(pauser, initialSupply, { from: recipient }),
           'Pausable: paused'
         );
       });

@@ -5,7 +5,7 @@ const ERC20PausableMock = artifacts.require('HTR');
 const { shouldBehaveLikePublicRole } = require('./behaviors/access/roles/PublicRole.behavior');
 
 contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAccount, ...otherAccounts]) {
-  const initialSupply = new BN("10").pow( new BN("18")).mul( new BN("75000000"));
+  const initialSupply = new BN("10").pow( new BN("18")).mul(new BN(75000000));
 
   beforeEach(async function () {
     this.token = await ERC20PausableMock.new();
@@ -42,9 +42,6 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
           await this.token.pause({ from });
         });
 
-        it('reverts', async function () {
-          await expectRevert(this.token.pause({ from }), 'Pausable: paused');
-        });
       });
     });
 
@@ -138,8 +135,9 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
 
       it('reverts when trying to transfer when paused', async function () {
         await this.token.pause({ from: pauser });
+        await this.token.transfer(recipient, initialSupply, { from: pauser });
 
-        await expectRevert(this.token.transfer(recipient, initialSupply, { from: pauser }),
+        await expectRevert(this.token.transfer(pauser, initialSupply, { from: recipient }),
           'Pausable: paused'
         );
       });
@@ -165,8 +163,10 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
 
       it('reverts when trying to approve when paused', async function () {
         await this.token.pause({ from: pauser });
+        await this.token.approve(anotherAccount, allowance, { from: pauser });
+        await this.token.transfer(anotherAccount, initialSupply, { from: pauser });
 
-        await expectRevert(this.token.approve(anotherAccount, allowance, { from: pauser }),
+        await expectRevert(this.token.approve(pauser, allowance, { from: anotherAccount }),
           'Pausable: paused'
         );
       });
@@ -211,6 +211,9 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
 
       beforeEach(async function () {
         await this.token.approve(anotherAccount, allowance, { from: pauser });
+        await this.token.transfer(anotherAccount, allowance, { from: pauser });
+        await this.token.approve(pauser, allowance, { from: anotherAccount });
+
       });
 
       it('allows to decrease approval when unpaused', async function () {
@@ -231,8 +234,10 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
       it('reverts when trying to transfer when paused', async function () {
         await this.token.pause({ from: pauser });
 
+        await this.token.decreaseAllowance(anotherAccount, decrement, { from: pauser })
+
         await expectRevert(this.token.decreaseAllowance(
-          anotherAccount, decrement, { from: pauser }), 'Pausable: paused'
+          pauser, decrement, { from: anotherAccount }), 'Pausable: paused'
         );
       });
     });
@@ -243,6 +248,9 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
 
       beforeEach(async function () {
         await this.token.approve(anotherAccount, allowance, { from: pauser });
+        await this.token.transfer(anotherAccount, allowance, { from: pauser });
+        await this.token.approve(pauser, allowance, { from: anotherAccount });
+
       });
 
       it('allows to increase approval when unpaused', async function () {
@@ -262,9 +270,9 @@ contract('ERC20Pausable', function ([pauser, otherPauser, recipient, anotherAcco
 
       it('reverts when trying to increase approval when paused', async function () {
         await this.token.pause({ from: pauser });
-
+        await this.token.increaseAllowance(anotherAccount, increment, { from: pauser });
         await expectRevert(this.token.increaseAllowance(
-          anotherAccount, increment, { from: pauser }), 'Pausable: paused'
+          pauser, increment, { from: anotherAccount }), 'Pausable: paused'
         );
       });
     });

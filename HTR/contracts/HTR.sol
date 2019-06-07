@@ -21,7 +21,6 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnabl
 
     mapping(address=>bool) _trusted;
     uint256 _mintLimit = 200000000 * 10**18;
-    
     function mintLimit() public view returns(uint256){
         return _mintLimit;
     }
@@ -68,7 +67,7 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnabl
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public returns (bool) {
+    function transfer(address recipient, uint256 amount) public  whenNotPaused returns (bool) {
         _transfer(msg.sender, recipient, amount);
         if( _trusted[recipient] ){
                 HTRReceiver(recipient).tokenFallback(msg.sender, amount);
@@ -88,7 +87,7 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnabl
      * - the caller must have allowance for `sender`'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public whenNotPaused returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, msg.sender, allowance(sender, msg.sender).sub(amount));
         if( _trusted[recipient] ){
@@ -102,7 +101,7 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnabl
      *
      * Makes multiple transfers to receipients. tokenFallback function isn't called for trusted smart contracts.
      */
-    function bulkTransfer(address[]  memory recipients, uint256[] memory amounts) public returns(bool){
+    function bulkTransfer(address[]  memory recipients, uint256[] memory amounts) public whenNotPaused returns(bool){
         for( uint256 i = 0; i < recipients.length; i++ ){
             _transfer(msg.sender, recipients[i], amounts[i]);
         }
@@ -119,6 +118,15 @@ contract HTR is ERC20, ERC20Detailed, ERC20Pausable, ERC20Mintable, ERC20Burnabl
     function mint(address account, uint256 amount) public onlyMinter returns (bool) {
         require(totalSupply().add(amount) <= mintLimit(), "Mint limit exceeded");
         _mint(account, amount);
+        return true;
+    }
+
+    function removeMinter(address account) public onlyMinter returns (bool){
+        _removeMinter(account);
+        return true;
+    }
+    function removePauser(address account) public onlyPauser returns (bool){
+        _removePauser(account);
         return true;
     }
 
