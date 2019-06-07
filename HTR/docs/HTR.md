@@ -4,6 +4,7 @@
   * [bulkTransfer](#function-bulktransfer)
   * [totalSupply](#function-totalsupply)
   * [transferFrom](#function-transferfrom)
+  * [removeMinter](#function-removeminter)
   * [decimals](#function-decimals)
   * [increaseAllowance](#function-increaseallowance)
   * [unpause](#function-unpause)
@@ -11,6 +12,7 @@
   * [burn](#function-burn)
   * [isPauser](#function-ispauser)
   * [paused](#function-paused)
+  * [removePauser](#function-removepauser)
   * [renouncePauser](#function-renouncepauser)
   * [balanceOf](#function-balanceof)
   * [renounceOwnership](#function-renounceownership)
@@ -24,6 +26,7 @@
   * [symbol](#function-symbol)
   * [addMinter](#function-addminter)
   * [renounceMinter](#function-renounceminter)
+  * [mintLimit](#function-mintlimit)
   * [reclaimEther](#function-reclaimether)
   * [decreaseAllowance](#function-decreaseallowance)
   * [transfer](#function-transfer)
@@ -103,6 +106,18 @@ Inputs
 | *uint256* | amount | undefined |
 
 
+## *function* removeMinter
+
+HTR.removeMinter(account) `nonpayable` `3092afd5`
+
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | undefined |
+
+
 ## *function* decimals
 
 HTR.decimals() `view` `313ce567`
@@ -138,7 +153,7 @@ HTR.unpause() `nonpayable` `3f4ba83a`
 
 HTR.mint(account, amount) `nonpayable` `40c10f19`
 
-> See `ERC20._mint`.     * Requirements:     * - the caller must have the `MinterRole`.
+> See `ERC20._mint`.     * Requirements:     * - the caller must have the `MinterRole`. totalSupply + amount must be lower than mintLimit. 
 
 Inputs
 
@@ -180,6 +195,18 @@ HTR.paused() `view` `5c975abb`
 > Returns true if the contract is paused, and false otherwise.
 
 
+
+
+## *function* removePauser
+
+HTR.removePauser(account) `nonpayable` `6b2c0f55`
+
+
+Inputs
+
+| **type** | **name** | **description** |
+|-|-|-|
+| *address* | account | undefined |
 
 
 ## *function* renouncePauser
@@ -316,6 +343,14 @@ Inputs
 ## *function* renounceMinter
 
 HTR.renounceMinter() `nonpayable` `98650275`
+
+
+
+
+
+## *function* mintLimit
+
+HTR.mintLimit() `view` `996517cf`
 
 
 
